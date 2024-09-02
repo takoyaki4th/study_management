@@ -1,5 +1,7 @@
-const express=require('express');
+const express = require('express');
+const mysql = require('mysql2/promise');
 const app = express();
+let connection;
 
 const logMiddleware = (req ,res ,next)=>{
     console.log(req.method,req.url);
@@ -8,8 +10,39 @@ const logMiddleware = (req ,res ,next)=>{
 
 app.use(logMiddleware);
 
-app.get('/', (req,res) =>{
-    res.status(200).send('hello world');
+async function startServer(){
+    try{
+        connection = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: 'secret',
+            port : 3306,
+            database: 'study_db'
+        });
+
+        console.log('connected to MySQL');
+
+        app.listen(3000,() =>{
+            console.log('start listening');
+        });
+        
+    }catch(err){
+        console.log('error connecting: ' + err);
+        process.exit(1);
+    }
+}
+
+startServer();
+
+app.get('/', async (req,res) =>{
+    try {
+        const [rows,fields] = await connection.execute('SELECT * FROM users');
+        console.log(rows);
+    } catch (error) {
+        console.log('error connecting: ' + err);
+        process.exit(1);
+    }
+    
 });
 
 app.use((err,req,res,next) =>{
@@ -18,8 +51,4 @@ app.use((err,req,res,next) =>{
     }
     console.log(err);
     res.status(500).send('Interial Server Error');
-});
-
-app.listen(3000,() =>{
-    console.log('start listening');
 });
