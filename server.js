@@ -1,6 +1,10 @@
+const path = require('path');
 const express = require('express');
 const mysql = require('mysql2/promise');
 const app = express();
+
+app.set('view engine','ejs');
+
 let connection;
 
 const logMiddleware = (req ,res ,next)=>{
@@ -37,7 +41,7 @@ startServer();
 app.get('/', async (req,res) =>{
     try {
         const [rows,fields] = await connection.execute('SELECT * FROM users');
-        console.log(rows);
+        res.render(path.join(__dirname,'views','index.ejs'));
     } catch (error) {
         console.log('error connecting: ' + err);
         process.exit(1);
