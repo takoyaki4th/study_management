@@ -20,7 +20,7 @@ async function startServer(){
             database: 'study_db'
         });
 
-        console.log('connected to MySQL');
+        console.log('connected to study_db');
 
         app.listen(3000,() =>{
             console.log('start listening');
