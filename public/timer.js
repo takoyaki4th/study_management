@@ -106,7 +106,36 @@ document.addEventListener("DOMContentLoaded", function() {
                 total: totalP
             });
         });
+
+//////////////////////////////////
+        fetch('/set', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: 'Session Test' })
+        })
+        .then(response => response.text())
+        .then(() => {
+            // メッセージを取得するリクエスト
+            return fetch('/set/set');
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 取得したメッセージを表示
+            document.getElementById('message').textContent = data.message;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+
+/////////////////////////
+
+
     });
+
+
 });
 
 document.getElementById("TimerForm").addEventListener("submit", function(event) {
