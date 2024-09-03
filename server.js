@@ -1,9 +1,15 @@
 const path = require('path');
 const express = require('express');
+const session = require('express-session');
+const multer = require('multer');
 const mysql = require('mysql2/promise');
+const MySQLStore = require('express-mysql-session')(session);
 const app = express();
+const upload = multer({ dest: 'uploads/' });
 
 app.set('view engine','ejs');
+
+app.use('/static',express.static(path.join(__dirname,'public')));
 
 let connection;
 
@@ -21,7 +27,8 @@ async function startServer(){
             user: 'root',
             password: 'secret',
             port : 3306,
-            database: 'study_db'
+            database: 'study_db',
+            namedPlaceholders: true
         });
 
         console.log('connected to study_db');
@@ -40,14 +47,65 @@ startServer();
 
 app.get('/', async (req,res) =>{
     try {
-        const [rows,fields] = await connection.execute('SELECT * FROM users');
         res.render(path.join(__dirname,'views','index.ejs'));
-    } catch (error) {
+    } catch (err) {
         console.log('error connecting: ' + err);
         process.exit(1);
     }
-    
 });
+
+app.get('/api',async(req,res) =>{
+    try {
+        const [rows,fields] = await connection.execute('SELECT * FROM subjects');
+        res.status(200).json(rows);
+    } catch (err) {
+        console.log('error connecting: ' + err);
+        process.exit(1);
+    }
+});
+
+app.post('/api/timeChange',upload.single('file'),async(req,res)=>{
+    try{
+        await connection.query(
+            'UPDATE subjects SET total_time=total_time + :addTotal, day_time=day_time + :addDay WHERE id = :id',
+            {
+                addTotal:req.body.elapsedTime, 
+                addDay:req.body.elapsedTime,
+                id:1
+            }
+        );
+        const [rows,fields] = await connection.execute(
+            'SELECT * FROM subjects WHERE id = :id',
+            {id:1}
+        );
+        res.status(200).json(rows);
+    }catch(err){
+        console.log('error connecting: ' + err);
+        process.exit(1);
+    }
+});
+
+app.get('/api/dayReset',async (req,res)=>{
+    try{
+        const [ids] = await connection.query(
+            'SELECT id FROM subjects WHERE user_id = :user_id',
+            {user_id:1}
+        );
+        const subject_ids = ids.map(obj => obj.id);
+        await connection.query(
+            'UPDATE subjects SET day_time=0 WHERE id IN (:ids)',
+            { ids : subject_ids }
+        );
+        const [rows] = await connection.query(
+            'SELECT subject,day_time FROM subjects WHERE id IN (:ids)',
+            { ids : subject_ids}
+        );
+        res.status(200).json(rows);
+    }catch(err){
+        console.log('error connecting: ' + err);
+        process.exit(1);
+    }
+})
 
 app.use((err,req,res,next) =>{
     if(err.status){
