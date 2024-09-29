@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>勉強管理</title>
+    <!--<link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />-->
+    <!--<link rel="stylesheet" href="./css/AmodernCSSreset.css">-->
+    <link rel="stylesheet" href="/static/style.css" />
+    <!--<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>-->
+</head>
+
+<body>
+
+    <form id="TimerForm" action="api.php">
+        <select name="select" id="Subject">
+        </select>
+        <button id="StartStopButton" type="button">Start</button>
+        <p id="Timer">00:00:00:00</p>
+        <div>
+            <button id="SubmitButton" type="submit">記録</button>
+            <button id="ResetButton" type="button">取消</button>
+        </div>
+    </form>
+    
+    <div id="DayStudy">
+        <p>今日の勉強時間</p>
+    </div>
+    <form id="DayReset" action="api.php">
+        <button id="DayResetButton" type="submit">今日の勉強を始める/終わる</button>
+    </form>
+    <div id="TotalStudy">
+        <p>合計の勉強時間</p>
+    </div>
+
+    <p id="message"></p>
+
+    <script src="/static/timer.js" defer></script>
+</body>
+</html>
