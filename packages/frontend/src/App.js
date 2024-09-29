@@ -1,6 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { timeToString, startTimer, stopTimer, resetTimer } from './timer';
 import './App.css';
+
+async function sendData(url, formData, processResponse) {
+  try {
+      const options = formData 
+          ? { method: "POST", body: formData }
+          : { method: "POST" };
+      const response = await fetch(url, options);
+      const data = await response.json();
+
+      processResponse(data);
+
+  } catch (error) {
+      console.error("Error:", error);
+  }
+}
 
 function DayStusy({subject,day_study}) {
   return (
@@ -19,21 +34,24 @@ function TotalStudy({subject,total_study}){
 }
 
 function App() {
-  const subjects = [
-    {id:1 ,subject:'insi',day_study:1000*60*60,total_study:1000*60*60*6},
-    {id:2 ,subject:'toeic',day_study:1000*60,total_study:1000*10*6*60},
-    {id:3 ,subject:'programing',day_study:1000,total_study:10*60*6*60}
-  ];
+  const [subjects,setSubjects]=useState([]);
+  useEffect(() => {
+    sendData("/api", undefined , function(data) {
+      console.log(data);
+      setSubjects(data);
+    });
+  },[]);
+
   const option_list = subjects.map((subject) =>{
     return <option key={subject.id}>{subject.subject}</option>; 
   });
 
   const day_study_list = subjects.map((subject) => {
-    return <DayStusy key={subject.id} subject={subject.subject} day_study={subject.day_study} />;
+    return <DayStusy key={subject.id} subject={subject.subject} day_study={subject.day_time} />;
   });
 
   const total_study_list = subjects.map((subject) => {
-    return <TotalStudy key={subject.id} subject={subject.subject} total_study={subject.total_study} />;
+    return <TotalStudy key={subject.id} subject={subject.subject} total_study={subject.total_time} />;
   });
 
   const [isStart,setIsStart] = useState(true);
@@ -50,22 +68,24 @@ function App() {
 
   const handleOnReset = resetTimer;
 
-  const handleOnSubmit = () =>{
+  const handleOnSubmit = (event) =>{
+    event.preventDefault();
     resetTimer();
   }
 
-  const handleOnDayReset = () =>{
+  const handleOnDayReset = (event) =>{
+    event.preventDefault();
     resetTimer();
   }
 
   return (
     <div id='container'>
-      <form action="api.php">
+      <form onSubmit={handleOnSubmit}>
         <select name="select" id="Subject">{option_list}</select>
         <button id="StartStopButton" type="button" onClick={handleOnStartStop}>{isStart ? 'Start': 'Stop' }</button>
         <p id="Timer">00:00:00:00</p>
         <div>
-            <button type="submit" onSubmit={handleOnSubmit}>記録</button>
+            <button type="submit">記録</button>
             <button type="button" onClick={handleOnReset}>取消</button>
         </div>
       </form>
@@ -74,8 +94,8 @@ function App() {
           <p>今日の勉強時間</p>
           {day_study_list}
       </div>
-      <form action="api.php">
-          <button type="submit" onSubmit={handleOnDayReset}>
+      <form onSubmit={handleOnDayReset}>
+          <button type="submit">
             今日の勉強を始める/終わる
           </button>
       </form>
