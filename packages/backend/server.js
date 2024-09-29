@@ -53,7 +53,7 @@ async function startServer(){
 
         console.log('connected to study_db');
 
-        app.listen(3000,() =>{
+        app.listen(8000,() =>{
             console.log('start listening');
         });
         
@@ -65,16 +65,7 @@ async function startServer(){
 
 startServer();
 
-app.get('/', async (req,res) =>{
-    try {
-        res.render(path.join(__dirname,'views','index.ejs'));
-    } catch (err) {
-        console.log('error connecting: ' + err);
-        process.exit(1);
-    }
-});
-
-app.get('/api',async(req,res) =>{
+app.post('/api',async(req,res) =>{
     try {
         const [rows,fields] = await connection.execute('SELECT * FROM subjects');
         res.status(200).json(rows);
