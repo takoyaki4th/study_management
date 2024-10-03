@@ -1,7 +1,6 @@
 let startTime;
-let elapsedTime = 0;
+let elapsedTime=0;
 let timerInterval;
-const elementsMap = new Map();
 
 export function timeToString(time , mode=":") {
   const diffInHrs = time / 3600000;
@@ -27,11 +26,15 @@ export function timeToString(time , mode=":") {
   }
 }
 
-export function startTimer() {
+export function getElapsedTime(){
+  return elapsedTime;
+}
+
+export function startTimer(setElapsedTime) {
   startTime = Date.now() - elapsedTime;
   timerInterval = setInterval(function printTime() {
       elapsedTime = Date.now() - startTime;
-      document.getElementById("Timer").textContent = timeToString(elapsedTime);
+      setElapsedTime(timeToString(elapsedTime));
   }, 10);
 }
 
@@ -41,7 +44,28 @@ export function stopTimer() {
 
 export function resetTimer() {
   clearInterval(timerInterval);
-  document.getElementById("Timer").textContent = "00:00:00:00";
   elapsedTime = 0;
-  document.getElementById("StartStopButton").textContent = "Start";
+  return timeToString(elapsedTime);
+}
+
+export async function sendData(url, sendedData, processResponse) {
+  try {
+    const options = {
+      method: "POST",
+      headers: {},
+    };
+    
+    if (sendedData) {
+      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(sendedData);
+    }
+
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    processResponse(data);
+
+  } catch (error) {
+      console.error("Error:", error);
+  }
 }
